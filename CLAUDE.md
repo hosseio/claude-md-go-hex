@@ -70,7 +70,7 @@ package order
 
 type Order struct {
     aggregate.BaseAggregate  // Event sourcing support
-    
+
     id     ID
     status Status
 }
@@ -89,14 +89,67 @@ func (o *Order) Cancel() error {
     if err != nil {
         return err
     }
-    
+
     o.status = Cancelled
     o.Record(event.OrderCancelled{ID: string(o.id)})
     return nil
 }
 ```
 
-### 2. Command Handler Pattern
+### 2. Domain Entity Validation Pattern
+Domain entities must follow this validation pattern:
+
+```go
+package order
+
+import "errors"
+
+var (
+    ErrOrderIDBlank     = errors.New("order id cannot be blank")
+    ErrOrderAmountZero  = errors.New("order amount must be greater than zero")
+)
+
+type NewOrderRequest struct {
+    ID        string
+    Amount    float64
+    CreatedAt time.Time
+    UpdatedAt time.Time
+    // Other fields...
+}
+
+func NewOrder(req NewOrderRequest) (*Order, error) {
+    o := &Order{
+        id:        req.ID,
+        amount:    req.Amount,
+        createdAt: req.CreatedAt,
+        updatedAt: req.UpdatedAt,
+        // Initialize other fields...
+    }
+    return o, o.validate()
+}
+
+func (o *Order) validate() error {
+    if o.id == "" {
+        return ErrOrderIDBlank
+    }
+    if o.amount <= 0 {
+        return ErrOrderAmountZero
+    }
+    return nil
+}
+```
+
+**Key principles:**
+- Define validation errors as package-level `var` declarations using `errors.New()`
+- Use descriptive error names with `Err` prefix (e.g., `ErrOrderIDBlank`)
+- Create the entity first, then validate using a private `validate()` method
+- Return pattern: `return entity, entity.validate()` - entity is returned even on error
+- Constructor receives a request struct with all required data including `CreatedAt` and `UpdatedAt`
+- Never use `time.Now()` inside entity constructors - timestamps must come from the caller
+- Keep validation errors simple and specific to the domain
+- Tests should use `errors.Is()` to check for specific error types
+
+### 3. Command Handler Pattern
 ```go
 package creator
 
@@ -133,7 +186,7 @@ func (h CreateOrderCommandHandler) Handle(ctx context.Context, cmd CreateOrderCo
 }
 ```
 
-### 3. Repository Interface (Port)
+### 4. Repository Interface (Port)
 ```go
 package order
 
@@ -143,7 +196,7 @@ type Repository interface {
 }
 ```
 
-### 4. Value Objects with Business Rules
+### 5. Value Objects with Business Rules
 ```go
 package order
 
@@ -181,7 +234,7 @@ func (s *Status) changeTo(newStatus Status) error {
 }
 ```
 
-### 5. Bootstrap/Dependency Injection
+### 6. Bootstrap/Dependency Injection
 ```go
 package bootstrap
 
@@ -245,37 +298,6 @@ func NewService(ctx context.Context, cfg Config) (*Service, error) {
 - Record events in domain entities: `o.Record(event.OrderCreated{})`
 - Dispatch events after successful persistence
 - Events contain primitive data, not domain objects
-
-## Git Commit Rules
-- Use conventional commits format: `type: description`
-- Use only `-m` flag for commit messages (no additional descriptions)
-- Never include co-authored lines or Claude attribution
-- Keep commit messages concise and clear
-- **NEVER commit or push changes unless explicitly requested by the user**
-- **NEVER create or update PRs unless explicitly requested by the user**
-
-Example:
-```bash
-git commit -m "feat: add instance completion validation"
-git commit -m "fix: handle null pointer in message handler"
-git commit -m "test: add unit tests for IsComplete method"
-```
-
-## Pull Request Rules
-- PR title should use conventional commit format
-- Include only context explanation in PR description (no Summary section)
-- Never include co-authored lines or Claude attribution
-- Never merge a PR unless it is asked
-- **NEVER create, update, or push to PRs unless explicitly requested by the user**
-
-Example PR creation:
-```bash
-gh pr create --title "fix: handle completed instance errors gracefully" --body "$(cat <<'EOF'
-Explanation of the problem and solution, including what was implemented and why it was needed.
-
-EOF
-)"
-```
 
 ## Code Style Rules
 - NEVER add comments to code unless explicitly requested by the user
