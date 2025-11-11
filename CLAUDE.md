@@ -299,6 +299,37 @@ func NewService(ctx context.Context, cfg Config) (*Service, error) {
 - Dispatch events after successful persistence
 - Events contain primitive data, not domain objects
 
+## Git Commit Rules
+- Use conventional commits format: `type: description`
+- Use only `-m` flag for commit messages (no additional descriptions)
+- Never include co-authored lines or Claude attribution
+- Keep commit messages concise and clear
+- **NEVER commit or push changes unless explicitly requested by the user**
+- **NEVER create or update PRs unless explicitly requested by the user**
+
+Example:
+```bash
+git commit -m "feat: add instance completion validation"
+git commit -m "fix: handle null pointer in message handler"
+git commit -m "test: add unit tests for IsComplete method"
+```
+
+## Pull Request Rules
+- PR title should use conventional commit format
+- Include only context explanation in PR description (no Summary section)
+- Never include co-authored lines or Claude attribution
+- Never merge a PR unless it is asked
+- **NEVER create, update, or push to PRs unless explicitly requested by the user**
+
+Example PR creation:
+```bash
+gh pr create --title "fix: handle completed instance errors gracefully" --body "$(cat <<'EOF'
+Explanation of the problem and solution, including what was implemented and why it was needed.
+
+EOF
+)"
+```
+
 ## Code Style Rules
 - NEVER add comments to code unless explicitly requested by the user
 - Code should be self-documenting through clear naming and structure
