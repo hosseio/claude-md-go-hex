@@ -1,0 +1,28 @@
+# Local settings (user-specific configurations)
+settings.local.json
+
+# History and session data
+history.jsonl
+shell-snapshots/
+
+# Runtime/temporary data
+statsig/
+
+# IDE-specific files (runtime/temporary)
+ide/
+
+# Debug files
+debug/
+
+# Project-specific data (local project references)
+projects/
+
+# File history (local editing history)
+file-history/
+
+# Todos (personal task tracking)
+todos/
+
+# Plugins (if installed locally)
+# Uncomment if you want to version control plugins
+# plugins/

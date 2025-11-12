@@ -1,5 +1,5 @@
 ---
-description: Create conventional commit with optional push using Haiku model
+description: Create conventional commit with optional push
 model: haiku
 ---
 
@@ -18,9 +18,11 @@ Steps:
    - If Jira ticket found in branch name, add footer: `Ticket: TICKET-123`
 6. Stage all changes with `git add .`
 7. Create commit using the format from CLAUDE.md git commit rules
-8. If `--push` or `-p` flag is provided:
-   - If `-f` flag is also provided, push with `git push --force-with-lease`
-   - Otherwise, push normally with `git push`
+8. Parse flags from the command arguments:
+   - Check for push flags: `--push` or `-p` or combined in flags like `-pf`
+   - Check for force flags: `--force` or `-f` or combined in flags like `-pf`
+   - If both push and force flags are present, push with `git push --force-with-lease`
+   - If only push flag is present, push normally with `git push`
 
 Commit message format:
 ```
@@ -37,8 +39,10 @@ Important:
 - Extract ticket from branch name pattern: `[A-Z]+-[0-9]+` before first `/`
 - Never include co-authored lines or Claude attribution
 - By default only commit, use `--push` or `-p` flag to also push to remote
-- Add `-f` flag along with push flags to force push with lease: `/commit -p -f`
+- Add `--force` or `-f` flag along with push flags to force push with lease
+- Flags can be combined: `-pf` combines push and force flags
 - Usage:
   - `/commit` (commit only)
   - `/commit --push` or `/commit -p` (commit and push)
-  - `/commit -p -f` or `/commit --push -f` (commit and force push with lease)
+  - `/commit -p -f` or `/commit --push --force` (commit and force push with lease)
+  - `/commit -pf` (commit and force push with lease using combined flags)
