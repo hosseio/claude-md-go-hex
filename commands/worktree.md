@@ -1,5 +1,6 @@
 ---
 description: Create a git worktree with environment setup (copies .idea, symlinks CLAUDE.md, handles unversioned files)
+model: haiku
 ---
 
 Create a new git worktree with the following steps:
