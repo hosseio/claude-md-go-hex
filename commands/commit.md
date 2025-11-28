@@ -21,8 +21,17 @@ Steps:
 8. Parse flags from the command arguments:
    - Check for push flags: `--push` or `-p` or combined in flags like `-pf`
    - Check for force flags: `--force` or `-f` or combined in flags like `-pf`
+   - Check for PR flag: `--pr` (implies push)
    - If both push and force flags are present, push with `git push --force-with-lease`
-   - If only push flag is present, push normally with `git push`
+   - If only push flag is present (or --pr), push normally with `git push`
+9. If `--pr` flag is present, after pushing, create a PR:
+   - Run `git log origin/main..HEAD --oneline` to see commits
+   - Run `git log origin/main..HEAD --format="%s%n%b"` to get full commit messages
+   - If only ONE commit: use its title and body as-is for PR
+   - If MULTIPLE commits: use first commit title as base, combine details from all
+   - Create PR title following conventional commit format
+   - Create PR body with detailed description, add `Jira: TICKET-123` footer if found
+   - Use `gh pr create --title "..." --body "..." --base main`
 
 Commit message format:
 ```
@@ -40,9 +49,12 @@ Important:
 - Never include co-authored lines or Claude attribution
 - By default only commit, use `--push` or `-p` flag to also push to remote
 - Add `--force` or `-f` flag along with push flags to force push with lease
+- Add `--pr` flag to push and create a pull request (implies --push)
 - Flags can be combined: `-pf` combines push and force flags
 - Usage:
   - `/commit` (commit only)
   - `/commit --push` or `/commit -p` (commit and push)
   - `/commit -p -f` or `/commit --push --force` (commit and force push with lease)
   - `/commit -pf` (commit and force push with lease using combined flags)
+  - `/commit --pr` (commit, push, and create PR to main)
+  - `/commit -pf --pr` (commit, force push, and create PR)

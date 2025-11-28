@@ -1,3 +1,5 @@
-# description: Create conventional commit and push (alias for /commit --push)
+# description: Create conventional commit and push, optionally create PR with --pr
 
-/commit --push
+/commit --push $ARGUMENTS
+
+If `--pr` flag is present in arguments, after the commit and push completes successfully, execute `/pr` to create a pull request.
